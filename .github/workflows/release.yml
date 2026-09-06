@@ -12,41 +12,10 @@ on:
       - .gitignore
       - .github/**
 
-permissions:
-  id-token: write # required for OIDC-based publishing
-  contents: write # required for actions/checkout + creating releases
-
 jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - shell: pwsh # install dependencies
-        run: .\Build\build.ps1 -ResolveDependency -TaskList 'Init'
-
-      - shell: pwsh # stage module
-        run: .\Build\build.ps1 -TaskList 'CombineFunctionsAndStage'
-
-      - shell: pwsh # psscriptanalyzer
-        run: .\Build\build.ps1 -TaskList 'Analyze'
-
-      - shell: pwsh # pester
-        run: .\Build\build.ps1 -TaskList 'Test'
-
-      - shell: pwsh # compress module
-        run: .\Build\build.ps1 -TaskList 'CreateBuildArtifact'
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: Artifacts
-          path: "Artifacts"
-          if-no-files-found: error
-
-      - uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generate_release_notes: true
-          files: Artifacts/*.zip
-
+    uses: jjohns-dev/pwsh-module-ci/.github/workflows/release.yml@v1
+    permissions:
+      id-token: write
+      contents: write
