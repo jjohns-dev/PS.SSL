@@ -1,0 +1,24 @@
+name: ci
+run-name: ci
+
+on:
+  pull_request:
+    branches: ["*"]
+  push:
+    branches: [main]
+
+# Cancel any in-progress validate run on the same ref when a new one starts.
+# This consolidates rapid-fire submissions (force-pushes, multiple commits in a
+# PR) into a single completed run and saves Actions minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    uses: jjohns-dev/pwsh-module-ci/.github/workflows/ci.yml@v1
+    with:
+      os-matrix: '["ubuntu-latest", "windows-latest"]'
+    permissions:
+      contents: read
+      checks: write
