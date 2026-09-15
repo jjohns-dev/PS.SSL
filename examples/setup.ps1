@@ -77,7 +77,7 @@ if (Test-Path -Path $modulePath) {
     Write-Verbose -Message "PS.SSL already present at [$modulePath]; skipping clone."
 }
 else {
-    & git clone 'https://github.com/johnsarie27/PS.SSL.git' $modulePath
+    & git clone 'https://github.com/jjohns-dev/PS.SSL.git' $modulePath
 }
 
 # -----------------------------------------------------------------------------
