@@ -119,7 +119,7 @@
             # LicenseUri = ''
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/johnsarie27/PS.SSL'
+            ProjectUri = 'https://github.com/jjohns-dev/PS.SSL'
 
             # A URL to an icon representing this module.
             # IconUri = ''

@@ -1,8 +1,8 @@
 # PS.SSL
 
-[![validate](https://github.com/johnsarie27/PS.SSL/actions/workflows/validate.yml/badge.svg)](https://github.com/johnsarie27/PS.SSL/actions/workflows/validate.yml)
-[![GitHub release](https://img.shields.io/github/v/release/johnsarie27/PS.SSL?display_name=tag&sort=semver)](https://github.com/johnsarie27/PS.SSL/releases)
-[![License](https://img.shields.io/github/license/johnsarie27/PS.SSL)](LICENSE)
+[![validate](https://github.com/jjohns-dev/PS.SSL/actions/workflows/ci.yml/badge.svg)](https://github.com/jjohns-dev/PS.SSL/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/jjohns-dev/PS.SSL?display_name=tag&sort=semver)](https://github.com/jjohns-dev/PS.SSL/releases)
+[![License](https://img.shields.io/github/license/jjohns-dev/PS.SSL)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-7.0%2B-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/)
 
 PowerShell module that wraps `openssl` for creating and inspecting SSL/TLS
@@ -47,7 +47,7 @@ source:
 ```pwsh
 # Clone into your user modules folder
 $modulesPath = ($env:PSModulePath -split [System.IO.Path]::PathSeparator)[0]
-git clone https://github.com/johnsarie27/PS.SSL.git (Join-Path $modulesPath 'PS.SSL')
+git clone https://github.com/jjohns-dev/PS.SSL.git (Join-Path $modulesPath 'PS.SSL')
 
 # Import
 Import-Module PS.SSL
