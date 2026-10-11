@@ -60,6 +60,10 @@ into your user-scope modules folder, and copies the example scripts to
 [CONTRIBUTING.md](CONTRIBUTING.md) for the local development workflow
 (psake build, Pester tests, PSScriptAnalyzer).
 
+The test suite requires PowerShell 7.4+ (Pester 6 does not support earlier
+versions), so CI exercises 7.4+ only. PowerShell 7.0–7.3 is still expected to
+work, but is no longer verified.
+
 ## Cmdlets
 
 | Cmdlet | Purpose |
