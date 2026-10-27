@@ -40,6 +40,12 @@ Describe '<_> help' -ForEach $Cmdlets {
         $Command = Get-Command -Name $_ # Get current from -ForEach $Cmdlets in discovery-phase
         $CommandParameters = $Command.ParameterSets.Parameters | Sort-Object -Property Name -Unique | Where-Object { $_.Name -notin $Common } | Select-Object Name
         $CommandParameterNames = $CommandParameters.Name
+
+        # -ForEach is bound at discovery, so help parameter names must resolve here, not only in BeforeAll.
+        # Source them from the AST, not Get-Help: Get-Help silently drops a .PARAMETER block that names no real parameter,
+        # which makes the matching-help assertion a tautology. `$_ -and` drops the $null a help-less function yields.
+        $HelpContent = if ($Command.ScriptBlock) { $Command.ScriptBlock.Ast.GetHelpContent() }
+        $HelpParameterNames = @($HelpContent.Parameters.Keys | Where-Object { $_ -and $_ -notin $Common })
     }
     BeforeAll {
         $Common = 'ProgressAction', 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'Confirm', 'Whatif'
@@ -50,12 +56,11 @@ Describe '<_> help' -ForEach $Cmdlets {
 
         $Help = Get-Help $Command -ErrorAction SilentlyContinue
         $HelpParameters = $Help.Parameters.Parameter | Where-Object { $_.Name -notin $Common } | Sort-Object -Property Name -Unique
-        $HelpParameterNames = $HelpParameters.Name
     }
 
     # If help is not found, synopsis in auto-generated help is the syntax diagram
     It 'Should not be auto-generated' {
-        $Help.Synopsis | Should -Not -Contain 'CommonParameters'
+        $Help.Synopsis | Should -Not -BeLike '*CommonParameters*'
     }
 
     # Should be a description for every function
@@ -68,11 +73,13 @@ Describe '<_> help' -ForEach $Cmdlets {
         ($Help.Examples.Example | Select-Object -First 1).Code | Should -Not -BeNullOrEmpty
     }
 
-    # Should be a valid link
-    It 'Should have valid link response' {
-        if ($Help.relatedLinks.navigationLink.uri) {
-            $Results = Invoke-WebRequest -Uri $Help.relatedLinks.navigationLink.uri -UseBasicParsing -TimeoutSec 10
-            $Results.StatusCode | Should -Be '200'
+    # A .LINK, where present, must be a well-formed absolute http(s) URI; not requested, so these tests stay offline.
+    # Both checks are needed: the pattern rejects 'ftp://...', IsWellFormedUriString rejects 'https://example.com/a^b'.
+    It 'Should have a well-formed link' {
+        foreach ($Uri in @($Help.relatedLinks.navigationLink.uri | Where-Object { $_ })) {
+            $Uri | Should -Match '^https?://'
+            [System.Uri]::IsWellFormedUriString($Uri, [System.UriKind]::Absolute) |
+                Should -BeTrue -Because ('''{0}'' is not a well-formed absolute URI' -f $Uri)
         }
     }
 
@@ -83,13 +90,8 @@ Describe '<_> help' -ForEach $Cmdlets {
         $ParameterHelp.Description.Text | Should -Not -BeNullOrEmpty
     }
 
-    # Required value in Help should match IsMandatory property of parameter
-    It 'Should have correct mandatory value for parameter: <_>' -ForEach $CommandParameterNames -AllowNullOrEmptyForEach {
-        $CommandParameterName = $_
-        $ParameterHelp = $HelpParameters | Where-Object { $_.Name -ieq $CommandParameterName }
-        $CodeMandatory = ($Command.ParameterSets.Parameters | Sort-Object -Property Name -Unique | Where-Object { $_.Name -ieq $CommandParameterName }).IsMandatory.toString()
-        $ParameterHelp.Required | Should -Be $CodeMandatory
-    }
+    # Deliberately no mandatory-value test: with comment-based help, Get-Help derives Required
+    # from [Parameter(Mandatory)], so the assertion can only compare a value to itself. See jjohns-dev/pwsh-module-ci#17.
 
     # Shouldn't find extra parameters in help
     It 'Should have matching help for parameter: <_>' -ForEach $HelpParameterNames -AllowNullOrEmptyForEach {
