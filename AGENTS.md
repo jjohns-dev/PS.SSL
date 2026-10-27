@@ -53,7 +53,7 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v1`. `ci.yml` runs `Init`, `
 ## Gotchas that have bitten here
 
 - **Keep the `Test` gate on `$TestResults.Result -ne 'Passed'`.** Discovery/container errors leave `FailedCount` at 0. Under Pester 6 an empty `-ForEach` without `-AllowNullOrEmptyForEach` is such an error; the old `FailedCount` gate dropped 166 tests and stayed green (#68). Mutation-checked: an empty-`-ForEach` probe fails the build with "0 failed test(s)".
-- **openssl-dependent tests skip, not fail, when openssl is absent.** `Describe -Skip:` is evaluated at discovery; with openssl off `PATH` the integration file reports 4 skipped, Result `Passed`.
+- **openssl-dependent tests skip, not fail, when openssl is absent.** `Describe -Skip:` is evaluated at discovery; with openssl off `PATH` the integration file reports 4 skipped, Result `Passed`, and they still count toward `min-tests`.
 - **`Network`-tagged tests are excluded from `Test`** (`Filter.ExcludeTag`): live badssl.com probes flaked CI (#50). They are the 14 NotRun.
 - **`CreateBuildArtifact` depends only on `Init`.** On a clean tree it fails with "Could not get manifest version"; stage first.
 - **Build paths with `Join-Path`, never `"$HOME\Desktop"`.** The backslash is a literal filename character on Linux/macOS (#53). `Tests/Common/PathLiterals.Tests.ps1` now fails such literals.
