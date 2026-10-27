@@ -30,7 +30,6 @@ All pass today: `Test` reports 361 passed, 0 failed, 14 NotRun on macOS.
 | Pester | 6.2.0 |
 | psake | 5.0.4 |
 | PSScriptAnalyzer | 1.24.0 |
-| BuildHelpers | 2.0.16 |
 
 ## CI
 
@@ -38,8 +37,9 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v1`. `ci.yml` runs `Init`, `
 
 - run macOS (`os-matrix` is ubuntu + windows);
 - run `Network`-tagged tests (see below);
-- analyze `Tests/` or `Build/`: `Analyze` scans `Staging/` only. `pssa-sarif.yml` scans the whole repo, with PSScriptAnalyzer 1.25.0, not the 1.24.0 pin;
-- enforce a test-count floor: no `min-tests` is passed (#71).
+- analyze `Tests/` or `Build/`: `Analyze` scans `Staging/` only. `pssa-sarif.yml` scans the whole repo, with PSScriptAnalyzer 1.25.0, not the 1.24.0 pin.
+
+`min-tests: 337` is ~90% of the 375 collected (passed + NotRun) on 2026-10-27; re-measure when the suite shrinks deliberately.
 
 `release.yml` runs only on a `v*` tag push; merging publishes nothing.
 
