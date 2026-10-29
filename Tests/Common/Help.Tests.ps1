@@ -46,6 +46,12 @@ Describe '<_> help' -ForEach $Cmdlets {
         # which makes the matching-help assertion a tautology. `$_ -and` drops the $null a help-less function yields.
         $HelpContent = if ($Command.ScriptBlock) { $Command.ScriptBlock.Ast.GetHelpContent() }
         $HelpParameterNames = @($HelpContent.Parameters.Keys | Where-Object { $_ -and $_ -notin $Common })
+
+        # Links, unlike the parameter names above, come from Get-Help rather than the AST: the AST returns related-topic names
+        # (.LINK Get-Item) alongside URIs, which would fail the scheme check, while Get-Help moves them to linkText with an empty uri
+        # and still surfaces malformed URIs. A command with no .LINK still yields one navigationLink with an empty uri, so filter on
+        # the uri; no .LINK URI then means no link case at all.
+        $HelpLinkUris = @((Get-Help $Command -ErrorAction SilentlyContinue).relatedLinks.navigationLink.uri | Where-Object { $_ })
     }
     BeforeAll {
         $Common = 'ProgressAction', 'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction', 'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable', 'Verbose', 'WarningAction', 'WarningVariable', 'Confirm', 'Whatif'
@@ -75,12 +81,10 @@ Describe '<_> help' -ForEach $Cmdlets {
 
     # A .LINK, where present, must be a well-formed absolute http(s) URI; not requested, so these tests stay offline.
     # Both checks are needed: the pattern rejects 'ftp://...', IsWellFormedUriString rejects 'https://example.com/a^b'.
-    It 'Should have a well-formed link' {
-        foreach ($Uri in @($Help.relatedLinks.navigationLink.uri | Where-Object { $_ })) {
-            $Uri | Should -Match '^https?://'
-            [System.Uri]::IsWellFormedUriString($Uri, [System.UriKind]::Absolute) |
-                Should -BeTrue -Because ('''{0}'' is not a well-formed absolute URI' -f $Uri)
-        }
+    It 'Should have a well-formed link: <_>' -ForEach $HelpLinkUris -AllowNullOrEmptyForEach {
+        $_ | Should -Match '^https?://'
+        [System.Uri]::IsWellFormedUriString($_, [System.UriKind]::Absolute) |
+            Should -BeTrue -Because ('''{0}'' is not a well-formed absolute URI' -f $_)
     }
 
     # Should be a description for every parameter
