@@ -31,8 +31,6 @@ function Get-CSRTemplate {
         - Replaces the previously exported read-only `$CSR_Template` module variable.
           The variable form caused a benign but noisy `Remove-Module` warning because
           read-only variables cannot be torn down on module unload without -Force.
-    .LINK
-        https://example.com/a^b
     #>
     [CmdletBinding()]
     [OutputType([System.String[]])]
