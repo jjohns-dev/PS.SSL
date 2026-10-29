@@ -23,7 +23,7 @@
 ./Build/build.ps1 -TaskList Cleanup                   # removes Staging/ and Artifacts/
 ```
 
-All pass today: `Test` reports 361 passed, 0 failed, 14 NotRun on macOS.
+All pass today: `Test` reports 346 passed, 0 failed, 14 NotRun on macOS.
 
 | Pin (`Build/depend.psd1`) | Version |
 | ------------------------- | ------- |
@@ -39,7 +39,7 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v1`. `ci.yml` runs `Init`, `
 - run `Network`-tagged tests (see below);
 - analyze `Tests/` or `Build/`: `Analyze` scans `Staging/` only. `pssa-sarif.yml` scans the whole repo, with PSScriptAnalyzer 1.25.0, not the 1.24.0 pin.
 
-`min-tests: 337` is ~90% of the 375 collected (passed + NotRun) on 2026-10-27; re-measure when the suite shrinks deliberately.
+`min-tests` is one floor for both legs, so it is derived from the lower leg's collected count; the derivation is in its `ci.yml` comment. Re-measure both legs from the JUnit artifacts when the suite shrinks deliberately.
 
 `release.yml` runs only on a `v*` tag push; merging publishes nothing.
 
