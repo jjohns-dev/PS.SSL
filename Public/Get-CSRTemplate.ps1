@@ -32,7 +32,7 @@ function Get-CSRTemplate {
           The variable form caused a benign but noisy `Remove-Module` warning because
           read-only variables cannot be torn down on module unload without -Force.
     .LINK
-        ftp://example.com
+        https://example.com/a^b
     #>
     [CmdletBinding()]
     [OutputType([System.String[]])]
