@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   validate:
-    uses: jjohns-dev/pwsh-module-ci/.github/workflows/ci.yml@v1
+    uses: jjohns-dev/pwsh-module-ci/.github/workflows/ci.yml@a3e5f5cea513381634f211ac3b9208cbe1245fff # C5 test
     with:
       os-matrix: '["ubuntu-latest", "windows-latest"]'
       min-tests: 336 # lower leg (ubuntu): 346 executed (360 tests - 14 disabled) - min(floor(346 * 0.05), 10) = 346 - 10
