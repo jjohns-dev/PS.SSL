@@ -58,7 +58,7 @@ macOS, and Linux (installs openssl via winget/brew/apt-get/dnf, clones
 into your user-scope modules folder, and copies the example scripts to
 `~/ps.ssl-examples`). See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the local development workflow
-(psake build, Pester tests, PSScriptAnalyzer).
+(the shared pwsh-module-ci build harness, Pester tests, PSScriptAnalyzer).
 
 The test suite requires PowerShell 7.4+ (Pester 6 does not support earlier
 versions), so CI exercises 7.4+ only. PowerShell 7.0–7.3 is still expected to
