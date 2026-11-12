@@ -1,3 +1,6 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingConvertToSecureStringWithPlainText', '', Justification = 'Fixed test-fixture password, not a secret.')]
+param ()
+
 BeforeAll {
     $manifestPath = if ($env:BHPSModuleManifest) {
         $env:BHPSModuleManifest

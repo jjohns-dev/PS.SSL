@@ -5,7 +5,7 @@ BeforeAll {
     else {
         Join-Path -Path $PSScriptRoot -ChildPath '..\..\PS.SSL.psd1' | Resolve-Path | Select-Object -ExpandProperty Path
     }
-    # See New-CertificateSigningRequest.Tests.ps1 for rationale: `-Force` does
+    # See New-CertificateSigningRequest.tests.ps1 for rationale: `-Force` does
     # not displace a module loaded from a different absolute path, so remove
     # all existing PS.SSL copies before importing to keep the session clean.
     Get-Module -Name 'PS.SSL' -All | Remove-Module -Force -ErrorAction SilentlyContinue
