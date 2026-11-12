@@ -33,12 +33,12 @@ All pass today: `Test` reports 346 passed, 0 failed, 14 NotRun on macOS.
 All three workflows call `jjohns-dev/pwsh-module-ci@v2`. `ci.yml` runs `Init`, `CombineFunctionsAndStage`, `Analyze`, `Test`, then an independent "Verify Pester results" step. It does **not**:
 
 - run macOS (`os-matrix` is ubuntu + windows);
-- run `Network`-tagged tests (see below); run them locally from the repo root with `Invoke-Pester -Path ./Tests -TagFilter 'Network' -Output Detailed`;
-- analyze `Tests/` or `Build/`: `Analyze` scans `Staging/` only. `pssa-sarif.yml` scans the whole repo, with PSScriptAnalyzer 1.25.0, not the 1.24.0 pin.
+- run `Network`-tagged tests (see below); run them locally from the repo root with `Invoke-Pester -Path ./Tests/Integration/PS.SSL.Network.Integration.tests.ps1 -TagFilter 'Network' -Output Detailed` (not `-Path ./Tests`: the other test files read the harness's environment variables at discovery and fail outside it);
+- analyze `Tests/` or `Build/`: `Analyze` scans `Staging/` only. `pssa-sarif.yml` scans the whole repo. Both use the harness's PSScriptAnalyzer pin, 1.25.0.
 
 `min-tests` is one floor for both legs, so it is derived from the lower leg's collected count; the derivation is in its `ci.yml` comment. Re-measure both legs from the JUnit artifacts when the suite shrinks deliberately.
 
-`release.yml` runs only on a `v*` tag push; merging publishes nothing.
+`release.yml` publishes only on a `v*` tag push; merging publishes nothing. It also runs as a dry run on every PR: build, test and artifact, no publish.
 
 ## Conventions
 
@@ -49,8 +49,8 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v2`. `ci.yml` runs `Init`, `
 
 ## Gotchas that have bitten here
 
-- **Keep the `Test` gate on `$TestResults.Result -ne 'Passed'`.** Discovery/container errors leave `FailedCount` at 0. Under Pester 6 an empty `-ForEach` without `-AllowNullOrEmptyForEach` is such an error; the old `FailedCount` gate dropped 166 tests and stayed green (#68). Mutation-checked: an empty-`-ForEach` probe fails the build with "0 failed test(s)".
+- **The `Test` gate is on `$TestResults.Result -ne 'Passed'`, and now lives in the harness.** Discovery/container errors leave `FailedCount` at 0. Under Pester 6 an empty `-ForEach` without `-AllowNullOrEmptyForEach` is such an error; the old `FailedCount` gate dropped 166 tests and stayed green (#68). Mutation-checked: an empty-`-ForEach` probe fails the build with "0 failed test(s)".
 - **openssl-dependent tests skip, not fail, when openssl is absent.** `Describe -Skip:` is evaluated at discovery; with openssl off `PATH` the integration file reports 4 skipped, Result `Passed`, and they still count toward `min-tests`.
 - **`Network`-tagged tests are excluded from `Test`** by `PesterExcludeTag` in `Build/harness.psd1`, which the harness applies with `Filter.ExcludeTag`: live badssl.com probes flaked CI (#50). They are the 14 NotRun.
 - **`CreateBuildArtifact` depends only on `Init`.** On a clean tree it fails with "Could not get manifest version"; stage first.
-- **Build paths with `Join-Path`, never `"$HOME\Desktop"`.** The backslash is a literal filename character on Linux/macOS (#53). `Tests/Common/PathLiterals.Tests.ps1` now fails such literals.
+- **Build paths with `Join-Path`, never `"$HOME\Desktop"`.** The backslash is a literal filename character on Linux/macOS (#53). `Tests/Common/PathLiterals.tests.ps1` now fails such literals.
