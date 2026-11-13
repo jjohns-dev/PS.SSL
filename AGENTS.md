@@ -10,7 +10,7 @@
 | ---- | -------- |
 | `Public/` | One exported function per file |
 | `Private/` | Internal helpers; not exported |
-| `Tests/Common/` | Help, manifest, meta and path-literal tests run against every export |
+| `Tests/Common/` | Help tests only; manifest, encoding and path-literal checks come from the [shared harness suites](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md#shared-tests) |
 | `Tests/<folder>/*.tests.ps1` | Collected on every OS; names are matched case-insensitively |
 | `Tests/<folder>/*.tests.windows.ps1` | Collected only on Windows; never run on macOS/Linux |
 | `Build/` | `build.ps1` shim for the shared [pwsh-module-ci harness](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md), plus `harness.psd1` settings |
@@ -53,4 +53,4 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v2`. `ci.yml` runs `Init`, `
 - **openssl-dependent tests skip, not fail, when openssl is absent.** `Describe -Skip:` is evaluated at discovery; with openssl off `PATH` the integration file reports 4 skipped, Result `Passed`, and they still count toward `min-tests`.
 - **`Network`-tagged tests are excluded from `Test`** by `PesterExcludeTag` in `Build/harness.psd1`, which the harness applies with `Filter.ExcludeTag`: live badssl.com probes flaked CI (#50). They are the 14 NotRun.
 - **`CreateBuildArtifact` depends only on `Init`.** On a clean tree it fails with "Could not get manifest version"; stage first.
-- **Build paths with `Join-Path`, never `"$HOME\Desktop"`.** The backslash is a literal filename character on Linux/macOS (#53). `Tests/Common/PathLiterals.tests.ps1` now fails such literals.
+- **Build paths with `Join-Path`, never `"$HOME\Desktop"`.** The backslash is a literal filename character on Linux/macOS (#53). The harness's shared [path-literals suite](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md#shared-tests) fails such literals.
