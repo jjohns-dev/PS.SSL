@@ -10,10 +10,11 @@
 | ---- | -------- |
 | `Public/` | One exported function per file |
 | `Private/` | Internal helpers; not exported |
-| `Tests/Common/` | Help tests only; manifest, encoding and path-literal checks come from the [shared harness suites](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md#shared-tests) |
 | `Tests/<folder>/*.tests.ps1` | Collected on every OS; names are matched case-insensitively |
 | `Tests/<folder>/*.tests.windows.ps1` | Collected only on Windows; never run on macOS/Linux |
 | `Build/` | `build.ps1` shim for the shared [pwsh-module-ci harness](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md), plus `harness.psd1` settings |
+
+Help, manifest, encoding and path-literal checks come from the [shared harness suites](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md#shared-tests); this repo has no tests of its own for them.
 
 ## Build and test
 
@@ -24,7 +25,7 @@
 ./Build/build.ps1 -TaskList Cleanup                   # removes Staging/ and Artifacts/
 ```
 
-All pass today: `Test` reports 346 passed, 0 failed, 14 NotRun on macOS.
+All pass today: `Test` reports 252 passed, 0 failed, 14 NotRun on macOS.
 
 `Build/build.ps1` is the harness shim: it runs the pwsh-module-ci version that `ci.yml` pins. The build tool pins (Pester, psake, PSScriptAnalyzer) live in pwsh-module-ci's `Build/depend.psd1`, not here; see the [consumer guide](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md).
 
@@ -45,7 +46,6 @@ All three workflows call `jjohns-dev/pwsh-module-ci@v2`. `ci.yml` runs `Init`, `
 - `main` ruleset: signed commits, linear history, PR plus required checks. Squash-merge only; head branches auto-delete.
 - Branches are mostly `<type>/<slug>` (`fix/`, `ci/`, `chore/`).
 - Recent subjects are conventional (`fix(Build):`, `ci:`, `docs:`, `chore(release):`); link the issue in the PR body.
-- `Tests/Common/help.tests.ps1` is a template shared with sibling repos (jjohns-dev/pwsh-module-ci#17). Change it only under a tracking issue.
 
 ## Gotchas that have bitten here
 
