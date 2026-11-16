@@ -135,12 +135,15 @@ function Invoke-OpenSsl {
             # switch rather than removing this line.
             $process.StandardInput.Close()
 
-            # READ BOTH STREAMS BEFORE WaitForExit() TO AVOID DEADLOCKING ON
-            # COMMANDS THAT FILL EITHER PIPE'S OS BUFFER (typical limit ~4KB
-            # on Windows). A WaitForExit() before draining the pipes would
-            # hang any openssl invocation that emits more than that.
+            # READ STDERR ASYNCHRONOUSLY WHILE READING STDOUT. A sequential
+            # ReadToEnd() of one stream then the other deadlocks when openssl
+            # fills the unread pipe first: openssl blocks on that write while
+            # we block on the other stream. The Windows pipe buffer is about
+            # 4KB, and RSA-4096 key generation can exceed it on stderr (#82).
+            # Both pipes are drained before WaitForExit() for the same reason.
+            $stdErrTask     = $process.StandardError.ReadToEndAsync()
             $standardOutput = $process.StandardOutput.ReadToEnd()
-            $standardError  = $process.StandardError.ReadToEnd()
+            $standardError  = $stdErrTask.GetAwaiter().GetResult()
             $process.WaitForExit()
 
             # ALWAYS BUILD THE RESULT OBJECT - EVEN ON FAILURE - SO THE

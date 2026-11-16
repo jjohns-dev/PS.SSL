@@ -89,4 +89,46 @@ Describe 'PS.SSL integration (real openssl)' -Tag 'Integration' -Skip:(-not $scr
             $LASTEXITCODE | Should -Be 0
         }
     }
+
+    Context 'Invoke-OpenSsl with more stderr than a pipe buffer holds' {
+
+        It 'Returns instead of deadlocking when openssl writes over 64 KB to stderr' {
+            $dir = Join-Path $TestDrive 'stderr'
+            New-Item -Path $dir -ItemType Directory -Force | Out-Null
+            $keyPath = Join-Path $dir 'stderr.key'
+            $null = & openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out $keyPath 2>&1
+            $LASTEXITCODE | Should -Be 0
+
+            # openssl writes one stderr warning per unknown subject attribute,
+            # about 60 bytes each: 3,000 of them exceed any OS pipe buffer while
+            # the argument stays under the 32,767-character Windows limit.
+            $subject = '/CN=x' + (-join (1..3000 | ForEach-Object { '/z{0}=1' -f $_ }))
+            $arguments = @('req', '-new', '-key', $keyPath, '-subj', $subject, '-out', (Join-Path $dir 'stderr.csr'))
+
+            # A thread job with a timeout turns a deadlock into a test failure
+            # instead of a hung run.
+            $modulePath = (Get-Module -Name 'PS.SSL').Path
+            $job = Start-ThreadJob -ScriptBlock {
+                $module = Import-Module -Name $using:modulePath -Force -PassThru
+                & $module { param($a) Invoke-OpenSsl -ArgumentList $a -IgnoreExitCode } $using:arguments
+            }
+            try {
+                $finished = $null -ne (Wait-Job -Job $job -Timeout 60)
+                if (-not $finished) {
+                    # Killing the blocked openssl child closes its pipes, which
+                    # releases the job thread so cleanup cannot hang too.
+                    Get-Process -Name 'openssl' -ErrorAction SilentlyContinue |
+                        Where-Object { $_.Parent.Id -eq $PID } |
+                        Stop-Process -Force -ErrorAction SilentlyContinue
+                }
+                $finished | Should -BeTrue -Because 'Invoke-OpenSsl must drain stderr while it reads stdout'
+
+                $result = Receive-Job -Job $job -ErrorAction Stop
+                $result.StdErr.Length | Should -BeGreaterThan 65536
+            }
+            finally {
+                Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
 }
