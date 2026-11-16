@@ -25,7 +25,7 @@ Help, manifest, encoding and path-literal checks come from the [shared harness s
 ./Build/build.ps1 -TaskList Cleanup                   # removes Staging/ and Artifacts/
 ```
 
-All pass today: `Test` reports 251 passed, 0 failed, 14 NotRun on macOS.
+All pass today: `Test` reports 252 passed, 0 failed, 14 NotRun on macOS.
 
 `Build/build.ps1` is the harness shim: it runs the pwsh-module-ci version that `ci.yml` pins. The build tool pins (Pester, psake, PSScriptAnalyzer) live in pwsh-module-ci's `Build/depend.psd1`, not here; see the [consumer guide](https://github.com/jjohns-dev/pwsh-module-ci/blob/main/docs/consumer-guide.md).
 
